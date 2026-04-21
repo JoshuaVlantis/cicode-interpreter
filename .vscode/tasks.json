@@ -1,0 +1,58 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run CiCode Function",
+            "type": "shell",
+            "command": "python3",
+            "args": [
+                "${workspaceFolder}/interpreter/cicode.py",
+                "run",
+                "${file}",
+                "-c",
+                "${input:functionName}"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run CiCode (all .ci files)",
+            "type": "shell",
+            "command": "python3",
+            "args": [
+                "${workspaceFolder}/interpreter/cicode.py",
+                "run",
+                "${workspaceFolder}/Mixing_SQL.ci",
+                "${workspaceFolder}/Mixing_Functions.ci",
+                "-c",
+                "${input:functionName}"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "clear": true
+            },
+            "problemMatcher": []
+        }
+    ],
+    "inputs": [
+        {
+            "id": "functionName",
+            "type": "promptString",
+            "description": "CiCode function to run",
+            "default": "GetRecipes"
+        }
+    ]
+}

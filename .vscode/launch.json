@@ -1,0 +1,32 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "cicode",
+            "request": "launch",
+            "name": "Debug CiCode (current file)",
+            "program": "${workspaceFolder}/Mixing_SQL.ci",
+            "function": "${input:functionName}",
+            "additionalFiles": [
+                "${workspaceFolder}/Mixing_Functions.ci"
+            ]
+        },
+        {
+            "type": "cicode",
+            "request": "launch",
+            "name": "Debug CiCode (all files)",
+            "program": "${workspaceFolder}/Mixing_SQL.ci",
+            "function": "${input:functionName}",
+            "additionalFiles": [
+                "${workspaceFolder}/Mixing_Functions.ci"
+            ]
+        }
+    ],
+    "inputs": [
+        {
+            "id": "functionName",
+            "type": "command",
+            "command": "cicode.pickFunction"
+        }
+    ]
+}

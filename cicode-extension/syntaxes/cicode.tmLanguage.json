@@ -1,0 +1,327 @@
+{
+  "name": "Cicode",
+  "scopeName": "source.cicode",
+  "fileTypes": ["ci"],
+  "patterns": [
+    {
+      "begin": "/\\*\\*",
+      "end": "\\*/",
+      "name": "comment.block.xml-documentation.cicode",
+      "patterns": [
+        {
+          "contentName": "meta.embedded.block.xml",
+          "patterns": [
+            {
+              "name": "comment.block.parameter-normal-doxygen-documentation.cicode",
+              "match": "[@\\\\]param\\s(\\w+)\\s(.*)",
+              "captures": {
+                "0": { "name": "entity.other.attribute-name.xml" },
+                "1": { "name": "variable.other.cicode" },
+                "2": { "name": "comment.doc.text.cicode" }
+              }
+            },
+            {
+              "name": "comment.block.noarg-normal-doxygen-documentation.cicode",
+              "match": "([@\\\\]short|[@\\\\]brief|[@\\\\]return(?:s)?)\\s(.*)",
+              "captures": {
+                "1": { "name": "entity.other.attribute-name.xml" },
+                "2": { "name": "comment.doc.text.cicode" }
+              }
+            },
+            {
+              "name": "entity.name.tag.doc.xml.cicode",
+              "match": "</?[a-zA-Z0-9:_-]+"
+            },
+            {
+              "name": "entity.name.tag.doc.xml.cicode",
+              "match": "\\s*/?>"
+            },
+            {
+              "name": "entity.other.attribute-name.xml",
+              "match": "\\b[a-zA-Z0-9:_-]+(?=\\=)"
+            },
+
+            {
+              "name": "variable.parameter.doc.xml.cicode",
+              "match": "\"[^\"]*\""
+            },
+            {
+              "name": "variable.parameter.doc.xml.cicode",
+              "match": "'[^']*'"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "comment.line.documentation.cicode",
+      "match": "^(\\s*///\\s*)(<)(summary|param|returns)(?:\\s+(name)(\\s*=\\s*)(\")(\\w+)(\"))?(\\s*)(>)([^<]*?)(</)(\\3)(>)",
+      "captures": {
+        "1": { "name": "punctuation.definition.comment.cicode" },
+        "2": { "name": "punctuation.definition.tag.open.xml.cicode" },
+        "3": { "name": "entity.name.tag.doc.xml.cicode" },
+        "4": { "name": "entity.other.attribute-name.doc.xml.cicode" },
+        "5": { "name": "punctuation.separator.key-value.xml.cicode" },
+        "6": { "name": "punctuation.definition.string.begin.xml.cicode" },
+        "7": { "name": "variable.parameter.doc.xml.cicode" },
+        "8": { "name": "punctuation.definition.string.end.xml.cicode" },
+        "10": { "name": "punctuation.definition.tag.open.xml.cicode" },
+        "11": { "name": "comment.doc.text.cicode" },
+        "12": { "name": "punctuation.definition.tag.close.xml.cicode" },
+        "13": { "name": "entity.name.tag.doc.xml.cicode" },
+        "14": { "name": "punctuation.definition.tag.close.xml.cicode" }
+      }
+    },
+    {
+      "name": "comment.block.documentation.cicode",
+      "begin": "^(\\s*///\\s*)(<)(summary|returns)(\\s*>\\s*)$",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.comment.cicode" },
+        "2": { "name": "punctuation.definition.tag.open.xml.cicode" },
+        "3": { "name": "entity.name.tag.doc.xml.cicode" },
+        "4": { "name": "punctuation.definition.tag.open.xml.cicode" }
+      },
+      "end": "^(\\s*///\\s*)(</)(summary|returns)(>)\\s*$",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.comment.cicode" },
+        "2": { "name": "punctuation.definition.tag.close.xml.cicode" },
+        "3": { "name": "entity.name.tag.doc.xml.cicode" },
+        "4": { "name": "punctuation.definition.tag.close.xml.cicode" }
+      },
+      "patterns": [
+        {
+          "name": "comment.line.documentation.cicode",
+          "match": "^(\\s*///\\s*)(.*)$",
+          "captures": {
+            "1": { "name": "punctuation.definition.comment.cicode" },
+            "2": { "name": "comment.doc.text.cicode" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "comment.line.documentation.cicode",
+      "match": "^(\\s*///\\s*)(?!<)(.+)$",
+      "captures": {
+        "1": { "name": "punctuation.definition.comment.cicode" },
+        "2": { "name": "comment.doc.text.cicode" }
+      }
+    },
+    {
+      "name": "meta.function.cicode",
+      "begin": "(?i)^\\s*(?:(?:private|public|global|module|const|static)\\s+)*(?:(boolean|bool|int|real|long|ulong|byte|digital|uint|bcd|longbcd|string|object|module|quality|timestamp|void)\\s+)?function\\s+(\\w+)\\s*\\(",
+      "beginCaptures": {
+        "1": { "name": "storage.type.cicode" },
+        "2": { "name": "entity.name.function.cicode" },
+        "0": { "name": "keyword.declaration.function.cicode" }
+      },
+      "end": "(?i)^\\s*end\\b",
+      "endCaptures": { "0": { "name": "keyword.declaration.function.cicode" } },
+      "applyEndPatternLast": true,
+      "patterns": [{ "include": "#controlBlocks" }, { "include": "$self" }]
+    },
+    {
+      "name": "meta.function.cicode",
+      "begin": "(?i)^\\s*(?:(?:private|public|global|module|const|static)\\s+)*(?:(?:boolean|bool|int|real|long|ulong|byte|digital|uint|bcd|longbcd|string|object|module|quality|timestamp|void)\\s+)?function\\b(?![^\\r\\n]*\\()",
+      "beginCaptures": {
+        "0": { "name": "keyword.declaration.function.cicode" }
+      },
+      "end": "(?i)^\\s*end\\b",
+      "endCaptures": { "0": { "name": "keyword.declaration.function.cicode" } },
+      "applyEndPatternLast": true,
+      "patterns": [
+        {
+          "name": "comment.after-function.cicode",
+          "begin": "^(?i)\\s*(//|!|\\|)(.*)$",
+          "while": "^(?i)\\s*(//|!|\\|)(.*)$"
+        },
+        {
+          "name": "meta.function.header.cicode",
+          "begin": "^(?i)\\s*(?!if\\b|while\\b|for\\b|repeat\\b|try\\b|select\\b|case\\b)(\\w+)\\s*\\(",
+          "beginCaptures": { "1": { "name": "entity.name.function.cicode" } },
+          "end": "$",
+          "patterns": [{ "include": "$self" }]
+        },
+        { "include": "#controlBlocks" },
+        { "include": "$self" }
+      ]
+    },
+    {
+      "match": "\\b(?i:(if|while|for|then|else|do|to|is|return|select|case))\\b",
+      "name": "keyword.control.cicode"
+    },
+    {
+      "match": "\\b(?i:(and|or|not|mod|bitand|bitor|bitxor))\\b",
+      "name": "keyword.operator.cicode"
+    },
+    {
+      "match": "\\b(?i:(module|global|private|public))\\b",
+      "name": "storage.modifier.cicode"
+    },
+    {
+      "name": "meta.function-call.cicode",
+      "match": "\\b([A-Za-z_]\\w*)\\s*\\(",
+      "captures": { "1": { "name": "entity.name.function.call.cicode" } }
+    },
+    {
+      "match": "\\b(?i:(int|real|void|string|object|quality|timestamp|boolean|long|ulong|byte|digital|uint|bcd|longbcd))\\b",
+      "name": "storage.type.cicode"
+    },
+    {
+      "match": "\\b0[xX][0-9a-fA-F]{1,16}\\b",
+      "name": "constant.numeric.hex.cicode"
+    },
+    {
+      "match": "\\b(\\d+)|(\\d*\\.\\d+([eE][\\-+]?\\d+)?)\\b",
+      "name": "constant.numeric.cicode"
+    },
+    {
+      "match": "\\b(?i:(true|false))\\b",
+      "name": "constant.language.cicode"
+    },
+    {
+      "name": "meta.format.picture.cicode",
+      "begin": "(?x)(?<=[\\w\\)\\]\\\"\\'])\\s*:(?=\\s*(?:[#0,\\.()%+\\-]|E[+\\-]?0|e[+\\-]?0|d{1,4}|m{1,4}|y{1,4}|h{1,2}|n{1,2}|s{1,2}|z{1,3}|am/pm|AM/PM|a/p|A/P))",
+      "beginCaptures": {
+        "0": { "name": "keyword.operator.format.cicode" }
+      },
+      "end": "(?=\\s*(?:;|,|\\)|\\]|\\+\\s*[\"']|$))",
+      "patterns": [
+        { "match": "\\G\\s+", "name": "punctuation.whitespace.cicode" },
+        {
+          "name": "constant.other.format.numeric.cicode",
+          "match": "(?:[#0]+(?:,[#0]{3})*|[#0]+)(?:\\.[#0]+)?"
+        },
+        {
+          "name": "constant.other.format.exponent.cicode",
+          "match": "(?:E[+\\-]?0+|e[+\\-]?0+)"
+        },
+        {
+          "name": "constant.other.format.percent.cicode",
+          "match": "%"
+        },
+        {
+          "name": "constant.other.format.grouping.cicode",
+          "match": "[,\\.]"
+        },
+        {
+          "name": "constant.other.format.parens-sign.cicode",
+          "match": "[\\(\\)\\+\\-]"
+        },
+        {
+          "name": "constant.other.format.currency.cicode",
+          "match": "[\\$\\€\\£\\¥\\¢\\¤]"
+        },
+        {
+          "name": "constant.other.format.datetime.cicode",
+          "match": "\\b(?:dddd|ddd|dd|d|mmmm|mmm|mm|m|yyyy|yyy|yy|y|hh|h|nn|n|ss|s|zzz|zz|z|AM/PM|am/pm|A/P|a/p)\\b"
+        },
+        {
+          "name": "string.quoted.single.format-literal.cicode",
+          "match": "'(?:[^']|'')*'"
+        },
+        { "match": "\\s+", "name": "punctuation.whitespace.cicode" }
+      ]
+    },
+    {
+      "begin": "(//|!|\\|)",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.comment.cicode" }
+      },
+      "end": "$",
+      "name": "comment.line.cicode"
+    },
+    {
+      "begin": "/\\*(?!\\*)",
+      "end": "(?<!\\*)\\*\/",
+      "name": "comment.block.cicode"
+    },
+    {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.cicode",
+      "patterns": [
+        { "match": "\\^.", "name": "constant.character.escape.cicode" }
+      ]
+    },
+    {
+      "begin": "'",
+      "end": "'",
+      "name": "string.quoted.single.cicode",
+      "patterns": [
+        { "match": "\\^.", "name": "constant.character.escape.cicode" }
+      ]
+    },
+    {
+      "comment": "Variable/identifier references (excludes keywords and function calls)",
+      "match": "\\b(?!(?i:if|while|for|repeat|try|then|else|do|to|until|goto|break|continue|exit|abort|raise|return|except|finally|select|case|end|function|and|or|xor|not|div|mod|shl|shr|bitand|bitor|module|global|private|public|const|static|boolean|bool|int|real|void|long|ulong|byte|digital|uint|bcd|longbcd|string|object|quality|timestamp)\\b)([a-zA-Z_][a-zA-Z0-9_]*)\\b(?!\\s*\\()",
+      "name": "variable.other.cicode"
+    }
+  ],
+  "repository": {
+    "controlBlocks": {
+      "patterns": [
+        {
+          "name": "meta.block.if.cicode",
+          "begin": "\\b(?i:if)\\b",
+          "beginCaptures": { "0": { "name": "keyword.control.cicode" } },
+          "end": "(?i)\\bend\\b",
+          "endCaptures": { "0": { "name": "keyword.control.cicode" } },
+          "applyEndPatternLast": true,
+          "patterns": [{ "include": "#controlBlocks" }, { "include": "$self" }]
+        },
+        {
+          "name": "meta.block.for.cicode",
+          "begin": "\\b(?i:for)\\b",
+          "beginCaptures": { "0": { "name": "keyword.control.cicode" } },
+          "end": "(?i)\\bend\\b",
+          "endCaptures": { "0": { "name": "keyword.control.cicode" } },
+          "applyEndPatternLast": true,
+          "patterns": [{ "include": "#controlBlocks" }, { "include": "$self" }]
+        },
+        {
+          "name": "meta.block.while.cicode",
+          "begin": "\\b(?i:while)\\b",
+          "beginCaptures": { "0": { "name": "keyword.control.cicode" } },
+          "end": "(?i)\\bend\\b",
+          "endCaptures": { "0": { "name": "keyword.control.cicode" } },
+          "applyEndPatternLast": true,
+          "patterns": [{ "include": "#controlBlocks" }, { "include": "$self" }]
+        },
+        {
+          "name": "meta.block.select.case.cicode",
+          "begin": "\\b(?i:select\\s+case)\\b",
+          "beginCaptures": { "0": { "name": "keyword.control.cicode" } },
+          "end": "(?i)^\\s*end\\s+select\\b",
+          "endCaptures": { "0": { "name": "keyword.control.cicode" } },
+          "applyEndPatternLast": true,
+          "patterns": [
+            {
+              "name": "meta.case.clause.cicode",
+              "begin": "^\\s*(?i:case)\\b",
+              "beginCaptures": { "0": { "name": "keyword.control.cicode" } },
+              "end": "(?=^\\s*(?:(?i:case)\\b|(?i:end\\s+select)\\b))",
+              "applyEndPatternLast": true,
+              "patterns": [
+                { "include": "#controlBlocks" },
+                { "include": "$self" }
+              ]
+            },
+            { "include": "#controlBlocks" },
+            { "include": "$self" }
+          ]
+        },
+        {
+          "name": "meta.block.middle.cicode",
+          "begin": "\\b(?i:case)\\b",
+          "beginCaptures": { "0": { "name": "keyword.control.cicode" } },
+          "end": "(?=^\\s*(?:(?i:case)\\b|(?i:end)\\b|(?i:end\\s+select)\\b))",
+          "applyEndPatternLast": true,
+          "patterns": [{ "include": "#controlBlocks" }, { "include": "$self" }]
+        }
+      ]
+    }
+  },
+  "foldingStartMarker": "(?i)^\\s*(?:(?:\\w+\\s+)*function\\b|if\\b|for\\b|while\\b|select\\s+case\\b)",
+  "foldingStopMarker": "(?i)^\\s*(end\\b|end\\s+select\\b)"
+}

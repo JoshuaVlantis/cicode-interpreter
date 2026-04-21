@@ -1,0 +1,93 @@
+{
+  "name": "cicode",
+  "displayName": "CiCode",
+  "description": "AVEVA CiCode language support with integrated interpreter and debugger",
+  "version": "1.0.0",
+  "publisher": "cicode-local",
+  "engines": { "vscode": "^1.74.0" },
+  "categories": ["Programming Languages", "Debuggers"],
+  "activationEvents": ["onLanguage:cicode", "onDebug"],
+  "main": "./extension.js",
+  "contributes": {
+    "breakpoints": [
+      { "language": "cicode" }
+    ],
+    "languages": [{
+      "id": "cicode",
+      "aliases": ["CiCode", "cicode"],
+      "extensions": [".ci"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "cicode",
+      "scopeName": "source.cicode",
+      "path": "./syntaxes/cicode.tmLanguage.json"
+    }],
+    "commands": [
+      {
+        "command": "cicode.runFunction",
+        "title": "Run CiCode Function",
+        "icon": "$(play)"
+      },
+      {
+        "command": "cicode.runAllFiles",
+        "title": "CiCode: Run Function (All Files)"
+      }
+    ],
+    "menus": {
+      "editor/title": [{
+        "command": "cicode.runFunction",
+        "when": "resourceLangId == cicode",
+        "group": "navigation"
+      }]
+    },
+    "debuggers": [{
+      "type": "cicode",
+      "label": "CiCode Debug",
+      "languages": ["cicode"],
+      "configurationAttributes": {
+        "launch": {
+          "required": ["program", "function"],
+          "properties": {
+            "program": {
+              "type": "string",
+              "description": "Path to main .ci file (use ${file} for current file)",
+              "default": "${file}"
+            },
+            "function": {
+              "type": "string",
+              "description": "CiCode function name to run",
+              "default": "Main"
+            },
+            "additionalFiles": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Additional .ci files to load",
+              "default": []
+            }
+          }
+        }
+      },
+      "initialConfigurations": [{
+        "type": "cicode",
+        "request": "launch",
+        "name": "Debug CiCode Function",
+        "program": "${file}",
+        "function": "Main",
+        "additionalFiles": []
+      }],
+      "configurationSnippets": [{
+        "label": "CiCode: Launch",
+        "description": "Debug a CiCode function",
+        "body": {
+          "type": "cicode",
+          "request": "launch",
+          "name": "Debug CiCode",
+          "program": "^\"${file}\"",
+          "function": "Main",
+          "additionalFiles": []
+        }
+      }]
+    }]
+  }
+}

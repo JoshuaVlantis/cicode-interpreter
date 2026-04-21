@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+
+# VSCode
+.vscode/settings.json
+
+# Backup files
+*.bak
+
+# PDF — allow the CiCode reference PDF
+# *.pdf
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude session files
+.claude/
+*.ci
