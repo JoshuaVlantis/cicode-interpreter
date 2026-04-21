@@ -139,14 +139,7 @@ DRIVER={SQL Server};SERVER=<host>;Database=<database>;Uid=<user>;Pwd=<password>;
 
 ## Reference Documentation
 
-The full AVEVA Plant SCADA CiCode Reference (2026 edition) is in:
-```
-~/Desktop/CiCode/aveva™_plant_scada_cicode_reference_2026-04-21-09-03-14.pdf
-```
-A plain-text extracted copy is at:
-```
-~/.copilot/session-state/.../cicode_reference.txt  (83,568 lines)
-```
+The full AVEVA Plant SCADA CiCode Reference (2026 edition) PDF and a plain-text extracted copy (`cicode_reference.txt`, 83,568 lines) are both in the project root alongside this README. The `.txt` is gitignored — keep it local for fast searching.
 
 Key error codes from the reference:
 | Code | Meaning |

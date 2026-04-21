@@ -119,7 +119,7 @@ All display (`DspXxx`), I/O device (`IODevice`), alarm (`AlmXxx`), trend (`TrnXx
 
 ## Adding a Missing Builtin
 
-1. Find the function spec in the CiCode Reference PDF (or extracted text at `~/.copilot/session-state/.../cicode_reference.txt`)
+1. Find the function spec in the CiCode Reference PDF or `cicode_reference.txt` in the project root (gitignored, 83,568 lines — fast to grep)
 2. Implement it in the appropriate `builtins/*.py` file (or `stub_funcs.py` if it's complex and not needed)
 3. Register it in the module's `register(interp)` function
 4. Use `interp._last_error` to report errors instead of raising exceptions

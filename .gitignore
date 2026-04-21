@@ -23,4 +23,7 @@ Thumbs.db
 
 # Claude session files
 .claude/
+
+# Local reference text (keep alongside PDF, don't commit)
+cicode_reference.txt
 *.ci
