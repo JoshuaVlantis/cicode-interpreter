@@ -8,6 +8,77 @@ const DEBUG_ADAPTER = path.join(__dirname, 'interpreter', 'debug_adapter.py');
 const isWindows = process.platform === 'win32';
 const python = isWindows ? 'python' : 'python3';
 
+const { execSync } = require('child_process');
+
+/**
+ * Check that Python and required packages are available.
+ * Shows an error notification with install instructions if anything is missing.
+ * Returns false if checks fail, true if all good.
+ */
+async function checkPrerequisites() {
+    // 1. Python itself
+    try {
+        execSync(`${python} --version`, { stdio: 'ignore' });
+    } catch {
+        const action = await vscode.window.showErrorMessage(
+            `CiCode: Python not found. Please install Python 3 and ensure it is on your PATH.`,
+            'Download Python'
+        );
+        if (action === 'Download Python') {
+            vscode.env.openExternal(vscode.Uri.parse('https://www.python.org/downloads/'));
+        }
+        return false;
+    }
+
+    // 2. Required packages
+    const missing = [];
+    for (const pkg of ['pymssql', 'tkinter']) {
+        try {
+            execSync(`${python} -c "import ${pkg}"`, { stdio: 'ignore' });
+        } catch {
+            missing.push(pkg);
+        }
+    }
+
+    if (missing.length > 0) {
+        const installable = missing.filter(p => p !== 'tkinter');
+        const tkMissing = missing.includes('tkinter');
+
+        let msg = `CiCode: Missing package(s): ${missing.join(', ')}.`;
+        const actions = [];
+
+        if (installable.length > 0) {
+            actions.push('Install via pip');
+        }
+        if (tkMissing) {
+            actions.push('Show tkinter fix');
+        }
+
+        const action = await vscode.window.showErrorMessage(msg, ...actions);
+
+        if (action === 'Install via pip') {
+            const terminal = vscode.window.createTerminal('CiCode Setup');
+            terminal.show();
+            const flag = isWindows ? '' : '--break-system-packages';
+            terminal.sendText(`${python} -m pip install ${installable.join(' ')} ${flag}`);
+        }
+        if (action === 'Show tkinter fix') {
+            if (isWindows || process.platform === 'darwin') {
+                vscode.window.showInformationMessage(
+                    'tkinter is included with standard Python on Windows/macOS. Re-install Python from python.org if it is missing.'
+                );
+            } else {
+                const terminal = vscode.window.createTerminal('CiCode Setup');
+                terminal.show();
+                terminal.sendText('sudo apt-get install -y python3-tk');
+            }
+        }
+        return false;
+    }
+
+    return true;
+}
+
 /** Build a terminal run command with a cross-platform "press enter to close" */
 function buildRunCmd(fileArgs, funcName) {
     const run = `${python} "${INTERPRETER}" run ${fileArgs} -c ${funcName}`;
@@ -43,6 +114,9 @@ async function pickFunction(fileText) {
 }
 
 function activate(context) {
+    // On activation: quietly check prerequisites and warn if broken
+    checkPrerequisites().catch(() => {});
+
     // Exposed as a command so launch.json inputs can call it via "type": "command"
     context.subscriptions.push(
         vscode.commands.registerCommand('cicode.pickFunction', async () => {
@@ -54,6 +128,7 @@ function activate(context) {
 
     context.subscriptions.push(
         vscode.commands.registerCommand('cicode.runFunction', async () => {
+            if (!await checkPrerequisites()) return;
             const editor = vscode.window.activeTextEditor;
             if (!editor) return;
             const activeFile = editor.document.fileName;
@@ -74,6 +149,7 @@ function activate(context) {
 
     context.subscriptions.push(
         vscode.commands.registerCommand('cicode.runAllFiles', async () => {
+            if (!await checkPrerequisites()) return;
             const folders = vscode.workspace.workspaceFolders;
             if (!folders) return;
             const wsRoot = folders[0].uri.fsPath;
@@ -99,6 +175,7 @@ function activate(context) {
     context.subscriptions.push(
         vscode.debug.registerDebugConfigurationProvider('cicode', {
             async resolveDebugConfiguration(folder, config) {
+                if (!await checkPrerequisites()) return undefined;
                 if (!config.type && !config.request && !config.name) {
                     const editor = vscode.window.activeTextEditor;
                     if (!editor) return undefined;
