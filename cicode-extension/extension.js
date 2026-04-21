@@ -5,6 +5,20 @@ const fs = require('fs');
 const INTERPRETER = path.join(__dirname, 'interpreter', 'cicode.py');
 const DEBUG_ADAPTER = path.join(__dirname, 'interpreter', 'debug_adapter.py');
 
+const isWindows = process.platform === 'win32';
+const python = isWindows ? 'python' : 'python3';
+
+/** Build a terminal run command with a cross-platform "press enter to close" */
+function buildRunCmd(fileArgs, funcName) {
+    const run = `${python} "${INTERPRETER}" run ${fileArgs} -c ${funcName}`;
+    if (isWindows) {
+        // PowerShell (VSCode default on Windows)
+        return `${run}; Write-Host ""; Read-Host "Press Enter to close"`;
+    } else {
+        return `${run}; echo; read -p "Press Enter to close..." && exit`;
+    }
+}
+
 /** Parse all FUNCTION names from a .ci file's text, in order. */
 function parseFunctions(text) {
     const regex = /^\s*(?:INT|REAL|STRING|OBJECT|QUALITY|TIMESTAMP)?\s*FUNCTION\s+(\w+)\s*\(/gim;
@@ -16,7 +30,7 @@ function parseFunctions(text) {
     return names;
 }
 
-/** Show a quick-pick of functions from the given file text, with the first one pre-selected. */
+/** Show a quick-pick of functions from the given file text. */
 async function pickFunction(fileText) {
     const funcs = parseFunctions(fileText);
     if (funcs.length === 0) {
@@ -54,7 +68,7 @@ function activate(context) {
             if (!funcName) return;
             const terminal = vscode.window.createTerminal('CiCode');
             terminal.show();
-            terminal.sendText(`python3 "${INTERPRETER}" run ${fileArgs} -c ${funcName}; echo; read -p "Press Enter to close..." && exit`);
+            terminal.sendText(buildRunCmd(fileArgs, funcName));
         })
     );
 
@@ -77,7 +91,7 @@ function activate(context) {
             if (!funcName) return;
             const terminal = vscode.window.createTerminal('CiCode');
             terminal.show();
-            terminal.sendText(`python3 "${INTERPRETER}" run ${ciFiles} -c ${funcName}; echo; read -p "Press Enter to close..." && exit`);
+            terminal.sendText(buildRunCmd(ciFiles, funcName));
         })
     );
 
@@ -115,7 +129,7 @@ function activate(context) {
 
     const factory = {
         createDebugAdapterDescriptor(session) {
-            return new vscode.DebugAdapterExecutable('python3', [DEBUG_ADAPTER]);
+            return new vscode.DebugAdapterExecutable(python, [DEBUG_ADAPTER]);
         }
     };
     context.subscriptions.push(
@@ -127,92 +141,3 @@ function deactivate() {}
 
 module.exports = { activate, deactivate };
 
-/** Parse all FUNCTION names from a .ci file's text, in order. */
-function parseFunctions(text) {
-    const regex = /^\s*(?:INT|REAL|STRING|OBJECT|QUALITY|TIMESTAMP)?\s*FUNCTION\s+(\w+)\s*\(/gim;
-    const names = [];
-    let m;
-    while ((m = regex.exec(text)) !== null) {
-        names.push(m[1]);
-    }
-    return names;
-}
-
-/** Show a quick-pick of functions from the given file text, with the first one pre-selected. */
-async function pickFunction(fileText) {
-    const funcs = parseFunctions(fileText);
-    if (funcs.length === 0) {
-        return vscode.window.showInputBox({ prompt: 'CiCode function to run' });
-    }
-    return vscode.window.showQuickPick(funcs, {
-        placeHolder: 'Select or type a CiCode function to run',
-        title: 'CiCode: Run Function'
-    });
-}
-
-function activate(context) {
-    // Exposed as a command so launch.json inputs can call it via "type": "command"
-    context.subscriptions.push(
-        vscode.commands.registerCommand('cicode.pickFunction', async () => {
-            const editor = vscode.window.activeTextEditor;
-            const text = editor ? editor.document.getText() : '';
-            return pickFunction(text);
-        })
-    );
-
-    context.subscriptions.push(
-        vscode.commands.registerCommand('cicode.runFunction', async () => {
-            const editor = vscode.window.activeTextEditor;
-            if (!editor) return;
-            const activeFile = editor.document.fileName;
-            const wsRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
-                        || path.dirname(activeFile);
-            const ciFiles = fs.readdirSync(wsRoot)
-                .filter(f => f.endsWith('.ci'))
-                .map(f => `"${path.join(wsRoot, f)}"`)
-                .join(' ');
-            const fileArgs = ciFiles || `"${activeFile}"`;
-            const funcName = await pickFunction(editor.document.getText());
-            if (!funcName) return;
-            const terminal = vscode.window.createTerminal('CiCode');
-            terminal.show();
-            terminal.sendText(`python3 "${INTERPRETER}" run ${fileArgs} -c ${funcName}; echo; read -p "Press Enter to close..." && exit`);
-        })
-    );
-
-    context.subscriptions.push(
-        vscode.commands.registerCommand('cicode.runAllFiles', async () => {
-            const folders = vscode.workspace.workspaceFolders;
-            if (!folders) return;
-            const wsRoot = folders[0].uri.fsPath;
-            const ciFiles = fs.readdirSync(wsRoot)
-                .filter(f => f.endsWith('.ci'))
-                .map(f => `"${path.join(wsRoot, f)}"`)
-                .join(' ');
-            if (!ciFiles) {
-                vscode.window.showWarningMessage('No .ci files found in workspace root.');
-                return;
-            }
-            const editor = vscode.window.activeTextEditor;
-            const text = editor ? editor.document.getText() : '';
-            const funcName = await pickFunction(text);
-            if (!funcName) return;
-            const terminal = vscode.window.createTerminal('CiCode');
-            terminal.show();
-            terminal.sendText(`python3 "${INTERPRETER}" run ${ciFiles} -c ${funcName}; echo; read -p "Press Enter to close..." && exit`);
-        })
-    );
-
-    const factory = {
-        createDebugAdapterDescriptor(session) {
-            return new vscode.DebugAdapterExecutable('python3', [DEBUG_ADAPTER]);
-        }
-    };
-    context.subscriptions.push(
-        vscode.debug.registerDebugAdapterDescriptorFactory('cicode', factory)
-    );
-}
-
-function deactivate() {}
-
-module.exports = { activate, deactivate };
