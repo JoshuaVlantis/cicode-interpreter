@@ -1,9 +1,13 @@
 {
   "name": "cicode",
-  "displayName": "CiCode",
-  "description": "AVEVA CiCode language support with integrated interpreter and debugger",
+  "displayName": "CiCode — AVEVA Plant SCADA",
+  "description": "CiCode language support, integrated interpreter and debugger for AVEVA Plant SCADA",
   "version": "1.0.0",
-  "publisher": "cicode-local",
+  "publisher": "JoshuaVlantis",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JoshuaVlantis/cicode-interpreter"
+  },
   "engines": { "vscode": "^1.74.0" },
   "categories": ["Programming Languages", "Debuggers"],
   "activationEvents": ["onLanguage:cicode", "onDebug"],
@@ -47,17 +51,16 @@
       "languages": ["cicode"],
       "configurationAttributes": {
         "launch": {
-          "required": ["program", "function"],
+          "required": ["program"],
           "properties": {
             "program": {
               "type": "string",
-              "description": "Path to main .ci file (use ${file} for current file)",
+              "description": "Path to main .ci file",
               "default": "${file}"
             },
             "function": {
               "type": "string",
-              "description": "CiCode function name to run",
-              "default": "Main"
+              "description": "CiCode function name to run"
             },
             "additionalFiles": {
               "type": "array",
@@ -73,7 +76,6 @@
         "request": "launch",
         "name": "Debug CiCode Function",
         "program": "${file}",
-        "function": "Main",
         "additionalFiles": []
       }],
       "configurationSnippets": [{
@@ -84,7 +86,6 @@
           "request": "launch",
           "name": "Debug CiCode",
           "program": "^\"${file}\"",
-          "function": "Main",
           "additionalFiles": []
         }
       }]
