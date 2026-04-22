@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "cicode",
+            "type": "cicode-interpreter",
             "request": "launch",
             "name": "Debug CiCode (current file)",
             "program": "${workspaceFolder}/Mixing_SQL.ci",
@@ -12,7 +12,7 @@
             ]
         },
         {
-            "type": "cicode",
+            "type": "cicode-interpreter",
             "request": "launch",
             "name": "Debug CiCode (all files)",
             "program": "${workspaceFolder}/Mixing_SQL.ci",
