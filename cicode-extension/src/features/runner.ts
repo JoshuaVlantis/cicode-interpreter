@@ -185,37 +185,34 @@ export function registerRunCommands(
         if (!(await checkPrerequisites())) return undefined;
         await vscode.workspace.saveAll(false);
 
-        // No launch.json — build defaults
+        const editor = vscode.window.activeTextEditor;
+        const wsRoot =
+          folder?.uri.fsPath ||
+          (editor ? path.dirname(editor.document.fileName) : "");
+
+        // No launch.json — fill in defaults from active file
         if (!config.type && !config.request && !config.name) {
-          const editor = vscode.window.activeTextEditor;
           if (!editor) return undefined;
-          const wsRoot =
-            folder?.uri.fsPath || path.dirname(editor.document.fileName);
           const ciFiles = fs
             .readdirSync(wsRoot)
             .filter((f) => f.endsWith(".ci"));
-          const funcName = await pickFunction(editor.document.getText());
-          if (!funcName) return undefined;
-          return {
+          config = {
             type: "cicode-interpreter",
             request: "launch",
             name: "CiCode Debug",
             program: editor.document.fileName,
-            function: funcName,
             additionalFiles: ciFiles
-              .filter(
-                (f) =>
-                  f !== path.basename(editor.document.fileName),
-              )
+              .filter((f) => f !== path.basename(editor.document.fileName))
               .map((f) => path.join(wsRoot, f)),
           };
         }
 
-        if (!config.function) {
-          const editor = vscode.window.activeTextEditor;
-          const text = editor ? editor.document.getText() : "";
-          config.function = await pickFunction(text);
-        }
+        // Always prompt for function — never rely on launch.json having it
+        const text = editor ? editor.document.getText() : "";
+        const funcName = await pickFunction(text);
+        if (!funcName) return undefined;
+        config.function = funcName;
+
         return config;
       },
     }),
