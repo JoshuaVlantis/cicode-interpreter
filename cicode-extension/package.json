@@ -2,7 +2,7 @@
   "name": "cicode",
   "displayName": "CiCode \u2014 AVEVA Plant SCADA",
   "description": "CiCode language support, integrated interpreter, IntelliSense, diagnostics, and debugger for AVEVA Plant SCADA",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "publisher": "JoshuaVlantis",
   "repository": {
     "type": "git",
@@ -318,10 +318,7 @@
     "debuggers": [
       {
         "type": "cicode",
-        "label": "Cicode Debug",
-        "languages": [
-          "cicode"
-        ],
+        "label": "Cicode Debug (SCADA Runtime)",
         "configurationAttributes": {
           "attach": {
             "properties": {
