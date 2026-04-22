@@ -1,33 +1,91 @@
 {
   "name": "cicode",
-  "displayName": "CiCode — AVEVA Plant SCADA",
-  "description": "CiCode language support, integrated interpreter and debugger for AVEVA Plant SCADA",
-  "version": "1.0.0",
+  "displayName": "CiCode \u2014 AVEVA Plant SCADA",
+  "description": "CiCode language support, integrated interpreter, IntelliSense, diagnostics, and debugger for AVEVA Plant SCADA",
+  "version": "1.1.1",
   "publisher": "JoshuaVlantis",
   "repository": {
     "type": "git",
     "url": "https://github.com/JoshuaVlantis/cicode-interpreter"
   },
-  "engines": { "vscode": "^1.74.0" },
-  "categories": ["Programming Languages", "Debuggers"],
-  "activationEvents": ["onLanguage:cicode", "onDebug"],
-  "main": "./extension.js",
+  "engines": {
+    "vscode": "^1.88.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Debuggers"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "workspaceContains:**/*.ci",
+    "onLanguage:cicode"
+  ],
   "contributes": {
-    "breakpoints": [
-      { "language": "cicode" }
+    "languages": [
+      {
+        "id": "cicode",
+        "aliases": [
+          "Cicode",
+          "cicode"
+        ],
+        "extensions": [
+          ".ci"
+        ],
+        "configuration": "./language-configuration.json"
+      }
     ],
-    "languages": [{
-      "id": "cicode",
-      "aliases": ["CiCode", "cicode"],
-      "extensions": [".ci"],
-      "configuration": "./language-configuration.json"
-    }],
-    "grammars": [{
-      "language": "cicode",
-      "scopeName": "source.cicode",
-      "path": "./syntaxes/cicode.tmLanguage.json"
-    }],
+    "grammars": [
+      {
+        "language": "cicode",
+        "scopeName": "source.cicode",
+        "path": "./syntaxes/cicode.tmLanguage.json"
+      }
+    ],
     "commands": [
+      {
+        "command": "cicode.rebuildBuiltins",
+        "title": "Cicode: Rebuild Builtin Functions"
+      },
+      {
+        "command": "cicode.reindexAll",
+        "title": "Cicode: Reindex All Files"
+      },
+      {
+        "command": "cicode.openHelpForSymbol",
+        "title": "Cicode: Open Help for Symbol"
+      },
+      {
+        "command": "cicode.insertDocSkeleton",
+        "title": "Cicode: Insert Doc Skeleton for Function"
+      },
+      {
+        "command": "cicode.createNewFile",
+        "title": "New File",
+        "icon": {
+          "dark": "src/media/new-file-for-dark.svg",
+          "light": "src/media/new-file-for-light.svg"
+        }
+      },
+      {
+        "command": "vscode.open",
+        "title": "Open"
+      },
+      {
+        "command": "copyFilePath",
+        "title": "Copy as path"
+      },
+      {
+        "command": "revealInExplorer",
+        "title": "Reveal in File Explorer"
+      },
+      {
+        "command": "renameFile",
+        "title": "Rename..."
+      },
+      {
+        "command": "deleteFile",
+        "title": "Delete"
+      },
       {
         "command": "cicode.runFunction",
         "title": "Run CiCode Function",
@@ -36,59 +94,386 @@
       {
         "command": "cicode.runAllFiles",
         "title": "CiCode: Run Function (All Files)"
+      },
+      {
+        "command": "cicode.pickFunction",
+        "title": "CiCode: Pick Function"
       }
     ],
-    "menus": {
-      "editor/title": [{
-        "command": "cicode.runFunction",
-        "when": "resourceLangId == cicode",
-        "group": "navigation"
-      }]
+    "keybindings": [
+      {
+        "command": "cicode.insertDocSkeleton",
+        "key": "ctrl+alt+d",
+        "when": "editorLangId == cicode && editorTextFocus"
+      }
+    ],
+    "configurationDefaults": {
+      "[cicode]": {
+        "files.encoding": "windows1252"
+      }
     },
-    "debuggers": [{
-      "type": "cicode",
-      "label": "CiCode Debug",
-      "languages": ["cicode"],
-      "configurationAttributes": {
-        "launch": {
-          "required": ["program"],
-          "properties": {
-            "program": {
-              "type": "string",
-              "description": "Path to main .ci file",
-              "default": "${file}"
-            },
-            "function": {
-              "type": "string",
-              "description": "CiCode function name to run"
-            },
-            "additionalFiles": {
-              "type": "array",
-              "items": { "type": "string" },
-              "description": "Additional .ci files to load",
-              "default": []
+    "configuration": {
+      "title": "Cicode",
+      "properties": {
+        "cicode.explorer.expandFolders": {
+          "type": "boolean",
+          "default": true,
+          "description": "Expand folders by default in the Cicode Explorer."
+        },
+        "cicode.indexing.excludePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Regular expressions matched against workspace-relative file paths to exclude from indexing."
+        },
+        "cicode.signatureOverrides": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "STRING SQLErrMsg([INT hHandle])",
+            "STRING MapOpen(STRING sMapName, INT nOpenMode [, STRING sCloseCallback])",
+            "STRING StrToLocalText(STRING sText)",
+            "INT DevClose(INT hDev [, INT Mode])",
+            "INT _ObjectCallMethod(INT hObject, STRING sMethod [, OBJECT vParam1] [, OBJECT vParam2] [, OBJECT vParam3] [, OBJECT vParam4] [, OBJECT vParam5] [, OBJECT vParam6] [, OBJECT vParam7] [, OBJECT vParam8] [, OBJECT vParam9] [, OBJECT vParam10])",
+            "INT ErrSetHw(INT Device, INT Error [, INT DeviceType])",
+            "INT TrnBrowseClose(INT iSession)",
+            "INT DspPopupMenu([INT iMenuNumber] [, STRING sMenuItems] [, INT XPos] [, INT YPos] [, INT bScaleX] [, INT bScaleY])",
+            "INT FormEdit(INT Col, INT Row, STRING Text, INT Width [, INT Height] [, INT bReadOnly] [, INT maxTextLength])",
+            "INT DspGetMouseOver([INT nAN])",
+            "INT MapValueSet(STRING sMapName, STRING sKeyName, VARIANT Value [, INT nSetMode])",
+            "UNKNOWN SubscriptionGetTag(INT iHandle [, INT sOffset])",
+            "STRING UserVerify(STRING sName, STRING sPassword [, sAccess] [, sPrivGlobal] [, sPriv1] [, sPriv2] [, sPriv3] [, sPriv4] [, sPriv5] [, sPriv6] [, sPriv7] [, sPriv8])",
+            "UNKNOWN EquipGetProperty(STRING Name, STRING Field [, INT Mode] [, STRING Cluster])",
+            "INT TimestampDifference(TIMESTAMP Timestamp1, TIMESTAMP Timestamp2 [, INT Part] [, INT bCumulative])",
+            "STRING SQLGetField(INT hGeneral, STRING sField [, INT nRowIndex])",
+            "INT ServerBrowseOpen([STRING Filter] [, STRING Fields] [, STRING Clusters])",
+            "TIMESTAMP VariableTimestamp(Variable [, INT Type])",
+            "STRING MenuNodeGetTargetPage([INT hNode])",
+            "INT MenuNodeSetExpanded(hNode, iValue)",
+            "UNKNOWN DLLCallEx(hFunction [, OBJECT vParam1] [, OBJECT vParam2] [, OBJECT vParam3] [, OBJECT vParam4] [, OBJECT vParam5] [, OBJECT vParam6] [, OBJECT vParam7] [, OBJECT vParam8] [, OBJECT vParam9] [, OBJECT vParam10])",
+            "INT TrnNew(INT nAN, STRING Trend [, Tag1] [, Tag2] [, Tag3] [, Tag4] [, Tag5] [, Tag6] [, Tag7] [, Tag8] [, STRING sClusterName])",
+            "UNKNOWN SubscriptionGetTimestamp(INT iHandle [, STRING sAttribute])",
+            "STRING QualityToStr(QUALITY quality, INT part [, INT localized])",
+            "UNKNOWN SubscriptionGetValue(iHandle [, INT sOffset])"
+          ],
+          "description": "Override or add function signatures. Each entry is a Cicode signature string, e.g. \"STRING BlaBla(STRING sLol, [STRING sOptional])\" or \"VOID Test2()\". Optional parameters use square brackets."
+        },
+        "cicode.avevaPath": {
+          "type": "string",
+          "default": "C:/Program Files (x86)/AVEVA Plant SCADA",
+          "description": "Path to AVEVA Plant SCADA installation folder. The extension will automatically find the help files."
+        },
+        "cicode.hover.showHelpLink": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show 'Open full help' link in hovers for builtins."
+        },
+        "cicode.diagnostics.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable basic diagnostics (undefined functions, duplicates)."
+        },
+        "cicode.format.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the simple Cicode formatter."
+        },
+        "cicode.format.maxConsecutiveBlankLines": {
+          "type": "number",
+          "default": 1,
+          "minimum": 0,
+          "maximum": 5,
+          "description": "Collapse multiple blank lines to this maximum (outside parentheses only)."
+        },
+        "cicode.lint.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable light lint diagnostics for common best practices."
+        },
+        "cicode.lint.maxLineLength": {
+          "type": "number",
+          "default": 160,
+          "minimum": 0,
+          "description": "Warn when lines exceed this length (0 = disable)."
+        },
+        "cicode.lint.warnMixedIndent": {
+          "type": "boolean",
+          "default": true,
+          "description": "Warn on mixing tabs and spaces at line starts."
+        },
+        "cicode.lint.warnMissingSemicolons": {
+          "type": "boolean",
+          "default": true,
+          "description": "Warn (info) when type declarations lack a trailing semicolon."
+        },
+        "cicode.lint.warnKeywordCase": {
+          "type": "boolean",
+          "default": false,
+          "description": "Suggest UPPERCASE keywords/END/IF/etc. Does not auto-fix."
+        },
+        "cicode.lint.warnUnusedVariables": {
+          "type": "boolean",
+          "default": true,
+          "description": "Warn about variables that are declared but never used."
+        },
+        "cicode.diagnostics.warnInvalidTypes": {
+          "type": "boolean",
+          "default": true,
+          "description": "Warn when a variable or function is declared with a tag data type that is not valid in Cicode (e.g. LONG, DIGITAL, BYTE)."
+        },
+        "cicode.diagnostics.warnUndeclaredVariables": {
+          "type": "boolean",
+          "default": false,
+          "description": "Warn about variables that are used but never declared."
+        },
+        "cicode.diagnostics.ignoredUndeclaredVariables": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Regex patterns for variable names to exclude from the undeclared variable check (e.g. \"^My_\")."
+        },
+        "cicode.lint.maxCallNestingDepth": {
+          "type": "number",
+          "default": 5,
+          "minimum": 0,
+          "description": "Warn when function calls are nested deeper than this level (0 = disable)."
+        },
+        "cicode.lint.maxBlockNestingDepth": {
+          "type": "number",
+          "default": 6,
+          "minimum": 0,
+          "description": "Warn when control flow blocks (IF/FOR/WHILE/etc.) are nested deeper than this level (0 = disable)."
+        },
+        "cicode.lint.warnMagicNumbers": {
+          "type": "boolean",
+          "default": false,
+          "description": "Warn about hardcoded numeric literals (excludes 0, 1, -1, and array indices)."
+        },
+        "cicode.diagnostics.warnDeclarationsInBlocks": {
+          "type": "boolean",
+          "default": true,
+          "description": "Warn when a variable declaration appears inside a control flow block (IF/FOR/WHILE/SELECT)."
+        },
+        "cicode.diagnostics.ignoredFunctions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Regex patterns for function names to exclude from undefined and argument count checks (e.g. \"^My_\")."
+        },
+        "cicode.codeLens.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show reference counts above function definitions."
+        },
+        "cicode.documentation.docskeleton.useBlockComment": {
+          "type": "string",
+          "default": "Block comment",
+          "description": "Style of comments used for the doc skeleton",
+          "enum": [
+            "Block comment",
+            "Single-line comment"
+          ],
+          "enumDescriptions": [
+            "Comment surrounded by /** ... */",
+            "Each line begins with ///"
+          ]
+        },
+        "cicode.documentation.docskeleton.doxygenStyle": {
+          "type": "string",
+          "default": "Javadoc style (@)",
+          "description": "The style of doxygen commands to be used by the doc skeleton",
+          "enum": [
+            "XML Doxygen commands",
+            "Javadoc style (@)",
+            "Normal style (\\)"
+          ]
+        }
+      }
+    },
+    "breakpoints": [
+      {
+        "language": "cicode"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "cicode",
+        "label": "Cicode Debug",
+        "languages": [
+          "cicode"
+        ],
+        "configurationAttributes": {
+          "attach": {
+            "properties": {
+              "stripQualityTags": {
+                "type": "string",
+                "description": "Strip {Good}/{Bad} quality tags from variable values. Set to \"false\" to keep them.",
+                "default": "true"
+              }
             }
           }
-        }
+        },
+        "initialConfigurations": [
+          {
+            "type": "cicode",
+            "request": "attach",
+            "name": "Attach to SCADA Runtime"
+          }
+        ],
+        "configurationSnippets": [
+          {
+            "label": "Cicode: Attach to SCADA Runtime",
+            "description": "Attach the Cicode debugger to a running AVEVA SCADA runtime.",
+            "body": {
+              "type": "cicode",
+              "request": "attach",
+              "name": "Attach to SCADA Runtime"
+            }
+          }
+        ]
       },
-      "initialConfigurations": [{
-        "type": "cicode",
-        "request": "launch",
-        "name": "Debug CiCode Function",
-        "program": "${file}",
-        "additionalFiles": []
-      }],
-      "configurationSnippets": [{
-        "label": "CiCode: Launch",
-        "description": "Debug a CiCode function",
-        "body": {
-          "type": "cicode",
-          "request": "launch",
-          "name": "Debug CiCode",
-          "program": "^\"${file}\"",
-          "additionalFiles": []
+      {
+        "type": "cicode-interpreter",
+        "label": "CiCode Interpreter Debug",
+        "languages": [
+          "cicode"
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "required": [
+              "program"
+            ],
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "Path to main .ci file",
+                "default": "${file}"
+              },
+              "function": {
+                "type": "string",
+                "description": "CiCode function name to run (prompted if omitted)"
+              },
+              "additionalFiles": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Additional .ci files to load",
+                "default": []
+              }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "type": "cicode-interpreter",
+            "request": "launch",
+            "name": "Debug CiCode Function",
+            "program": "${file}",
+            "additionalFiles": []
+          }
+        ],
+        "configurationSnippets": [
+          {
+            "label": "CiCode: Launch (Python Interpreter)",
+            "description": "Debug a CiCode function using the built-in Python interpreter (no SCADA needed)",
+            "body": {
+              "type": "cicode-interpreter",
+              "request": "launch",
+              "name": "Debug CiCode",
+              "program": "^\"${file}\"",
+              "additionalFiles": []
+            }
+          }
+        ]
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "cicodeExplorer",
+          "name": "Cicode Explorer",
+          "icon": ""
         }
-      }]
-    }]
+      ]
+    },
+    "menus": {
+      "view/item/context": [
+        {
+          "when": "view == cicodeExplorer && viewItem == file",
+          "command": "vscode.open",
+          "group": "1_open@1"
+        },
+        {
+          "when": "view == cicodeExplorer && viewItem == file",
+          "command": "revealInExplorer",
+          "group": "1_open@2"
+        },
+        {
+          "when": "view == cicodeExplorer && viewItem == file",
+          "command": "renameFile",
+          "group": "2_edit"
+        },
+        {
+          "when": "view == cicodeExplorer && viewItem == file",
+          "command": "copyFilePath",
+          "group": "3_misc"
+        },
+        {
+          "when": "view == cicodeExplorer && viewItem == file",
+          "command": "deleteFile",
+          "group": "4_delete"
+        },
+        {
+          "when": "view == cicodeExplorer && viewItem == folder",
+          "command": "copyFilePath"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "cicode.createNewFile",
+          "when": "view == cicodeExplorer",
+          "group": "navigation"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "cicode.runFunction",
+          "when": "resourceLangId == cicode",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build": "webpack --mode production",
+    "watch": "webpack --watch",
+    "vscode:prepublish": "npm run build",
+    "package": "@vscode/vsce package",
+    "publish": "@vscode/vsce publish",
+    "generate-test-files": "npx ts-node scripts/generate-test-files.ts",
+    "format": "prettier --write \"src/**/*.ts\" \"scripts/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"scripts/**/*.ts\""
+  },
+  "dependencies": {
+    "cheerio": "^1.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "@types/vscode": "^1.88.0",
+    "prettier": "^3.6.2",
+    "ts-loader": "^9.5.4",
+    "typescript": "^5.4.5",
+    "@vscode/vsce": "^3.0.0",
+    "webpack": "^5.102.0",
+    "webpack-cli": "^6.0.1"
   }
 }

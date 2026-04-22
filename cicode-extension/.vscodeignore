@@ -1,4 +1,23 @@
-.vscode/**
-**/__pycache__/
-**/*.pyc
-*.vsix
+# Exclude development sources
+src/
+node_modules/
+out/
+cache/
+logs/
+
+# Exclude dap source/build files
+dap/**
+!dap/cicode-debug-adapter.exe
+
+# Exclude the scripts folder
+scripts/
+
+# Exclude config and build files
+.gitignore
+.vscode/
+webpack.config.js
+tsconfig.json
+package-lock.json
+README.md
+LICENSE
+.github/

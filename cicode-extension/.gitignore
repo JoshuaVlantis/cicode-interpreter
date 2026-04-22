@@ -1,0 +1,38 @@
+# Node modules
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# VS Code extension build output (recompiled in CI/CD)
+out/
+dist/
+*.vsix
+
+# DAP adapter build artifact and log
+dap/cicode-debug-adapter.exe
+dap/cicode-dap.log
+dap/obj/
+
+# Logs
+logs/
+*.log
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# Build cache
+.cache/
+*.tsbuildinfo
+
+# Generated test fixtures
+test-fixtures/
+
+# VS Code project settings
+.vscode/*
+!.vscode/launch.json

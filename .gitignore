@@ -27,3 +27,7 @@ Thumbs.db
 # Local reference text (keep alongside PDF, don't commit)
 cicode_reference.txt
 *.ci
+cicode-extension/node_modules/
+cicode-extension/dist/
+cicode-extension/cache/
+*.vsix
