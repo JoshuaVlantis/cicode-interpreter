@@ -96,13 +96,43 @@ function parseFunctions(text: string): string[] {
   return names;
 }
 
-async function pickFunction(fileText: string): Promise<string | undefined> {
-  const funcs = parseFunctions(fileText);
+function parseFunctionsFromFiles(wsRoot: string, activeFile: string): string[] {
+  const ciFiles = wsRoot
+    ? fs.readdirSync(wsRoot).filter((f) => f.endsWith(".ci"))
+    : [];
+  const allFiles = [
+    activeFile,
+    ...ciFiles
+      .map((f) => path.join(wsRoot, f))
+      .filter((f) => f !== activeFile),
+  ];
+  const seen = new Set<string>();
+  const names: string[] = [];
+  for (const file of allFiles) {
+    try {
+      const text = fs.readFileSync(file, "utf8");
+      for (const name of parseFunctions(text)) {
+        if (!seen.has(name.toLowerCase())) {
+          seen.add(name.toLowerCase());
+          names.push(name);
+        }
+      }
+    } catch {
+      // skip unreadable files
+    }
+  }
+  return names;
+}
+
+async function pickFunction(fileText: string, wsRoot?: string, activeFile?: string): Promise<string | undefined> {
+  const funcs = wsRoot && activeFile
+    ? parseFunctionsFromFiles(wsRoot, activeFile)
+    : parseFunctions(fileText);
   if (funcs.length === 0) {
     return vscode.window.showInputBox({ prompt: "CiCode function to run" });
   }
   return vscode.window.showQuickPick(funcs, {
-    placeHolder: "Select or type a CiCode function to run",
+    placeHolder: "Select a CiCode function to run",
     title: "CiCode: Run Function",
   });
 }
@@ -140,7 +170,7 @@ export function registerRunCommands(
         .map((f) => `"${path.join(wsRoot, f)}"`)
         .join(" ");
       const fileArgs = ciFiles || `"${activeFile}"`;
-      const funcName = await pickFunction(editor.document.getText());
+      const funcName = await pickFunction(editor.document.getText(), wsRoot, activeFile);
       if (!funcName) return;
       const terminal = vscode.window.createTerminal("CiCode");
       terminal.show();
@@ -166,8 +196,8 @@ export function registerRunCommands(
         return;
       }
       const editor = vscode.window.activeTextEditor;
-      const text = editor ? editor.document.getText() : "";
-      const funcName = await pickFunction(text);
+      const activeFile = editor?.document.fileName || "";
+      const funcName = await pickFunction("", wsRoot, activeFile);
       if (!funcName) return;
       const terminal = vscode.window.createTerminal("CiCode");
       terminal.show();
@@ -193,23 +223,26 @@ export function registerRunCommands(
         // No launch.json — fill in defaults from active file
         if (!config.type && !config.request && !config.name) {
           if (!editor) return undefined;
-          const ciFiles = fs
-            .readdirSync(wsRoot)
-            .filter((f) => f.endsWith(".ci"));
           config = {
             type: "cicode-interpreter",
             request: "launch",
             name: "CiCode Debug",
             program: editor.document.fileName,
-            additionalFiles: ciFiles
-              .filter((f) => f !== path.basename(editor.document.fileName))
-              .map((f) => path.join(wsRoot, f)),
           };
         }
 
+        // Always load all .ci files in the workspace so cross-file functions work
+        const activeFile = config.program as string;
+        const ciFiles = wsRoot
+          ? fs.readdirSync(wsRoot).filter((f) => f.endsWith(".ci"))
+          : [];
+        config.additionalFiles = ciFiles
+          .filter((f) => path.join(wsRoot, f) !== activeFile)
+          .map((f) => path.join(wsRoot, f));
+
         // Always prompt for function — never rely on launch.json having it
         const text = editor ? editor.document.getText() : "";
-        const funcName = await pickFunction(text);
+        const funcName = await pickFunction(text, wsRoot, activeFile);
         if (!funcName) return undefined;
         config.function = funcName;
 
