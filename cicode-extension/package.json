@@ -2,7 +2,7 @@
   "name": "cicode",
   "displayName": "CiCode \u2014 AVEVA Plant SCADA",
   "description": "CiCode language support, integrated interpreter, IntelliSense, diagnostics, and debugger for AVEVA Plant SCADA",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "publisher": "JoshuaVlantis",
   "repository": {
     "type": "git",
@@ -316,39 +316,6 @@
       }
     ],
     "debuggers": [
-      {
-        "type": "cicode",
-        "label": "Cicode Debug (SCADA Runtime)",
-        "configurationAttributes": {
-          "attach": {
-            "properties": {
-              "stripQualityTags": {
-                "type": "string",
-                "description": "Strip {Good}/{Bad} quality tags from variable values. Set to \"false\" to keep them.",
-                "default": "true"
-              }
-            }
-          }
-        },
-        "initialConfigurations": [
-          {
-            "type": "cicode",
-            "request": "attach",
-            "name": "Attach to SCADA Runtime"
-          }
-        ],
-        "configurationSnippets": [
-          {
-            "label": "Cicode: Attach to SCADA Runtime",
-            "description": "Attach the Cicode debugger to a running AVEVA SCADA runtime.",
-            "body": {
-              "type": "cicode",
-              "request": "attach",
-              "name": "Attach to SCADA Runtime"
-            }
-          }
-        ]
-      },
       {
         "type": "cicode-interpreter",
         "label": "CiCode Interpreter Debug",

@@ -4,19 +4,8 @@
         {
             "type": "cicode-interpreter",
             "request": "launch",
-            "name": "Debug CiCode (current file)",
-            "program": "${file}",
-            "additionalFiles": []
-        },
-        {
-            "type": "cicode-interpreter",
-            "request": "launch",
-            "name": "Debug CiCode (all files)",
-            "program": "${file}",
-            "additionalFiles": [
-                "${workspaceFolder}/Mixing_SQL.ci",
-                "${workspaceFolder}/Mixing_Functions.ci"
-            ]
+            "name": "Debug CiCode",
+            "program": "${file}"
         }
     ]
 }
