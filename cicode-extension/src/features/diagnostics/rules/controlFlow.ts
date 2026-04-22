@@ -122,6 +122,34 @@ export const controlFlowRule: Rule = {
       }
     }
 
+    // Detect run-on keywords at statement start: "WHILEvar", "SELECTvar", "RETURNvar",
+    // "IFvar", "FORvar" — keyword glued to identifier due to missing space.
+    // Only flag at statement-start positions (start of line after whitespace, or after ;)
+    // to avoid false positives inside expressions or comments.
+    // NOTE: NO 'i' flag — keywords must be uppercase to avoid false-positives on
+    // legitimate function names like FormNew, FormPrompt, FormulaEditorFormulaList.
+    const RUNON_RE =
+      /(?:^|;)\s*\b((WHILE|SELECT|RETURN|IF|FOR)([A-Za-z_][A-Za-z0-9_]*))\b/gm;
+    while ((m = RUNON_RE.exec(text))) {
+      // m[1] = full token (e.g. "WHILEznRow"), m[2] = keyword, m[3] = suffix
+      const fullToken = m[1];
+      const keyword = m[2].toUpperCase();
+      const rest = m[3];
+      // Position of fullToken within the line
+      const tokenIndex = m.index + m[0].length - fullToken.length;
+      if (inSpan(tokenIndex, ignoreNoHeaders)) continue;
+      if (inSpan(tokenIndex, ignore)) continue;
+      const pos = doc.positionAt(tokenIndex);
+      diags.push(
+        diag(
+          new vscode.Range(pos, pos.translate(0, fullToken.length)),
+          `'${fullToken}' is not a valid keyword — missing space? Did you mean '${keyword} ${rest}'?`,
+          vscode.DiagnosticSeverity.Error,
+          "E2041",
+        ),
+      );
+    }
+
     return diags;
   },
 };

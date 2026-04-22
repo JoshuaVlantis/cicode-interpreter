@@ -79,6 +79,14 @@ class Parser:
         tok = self.current()
         return ParseError(msg, self.filename, tok.line)
 
+    def _keyword_prefix_hint(self, name: str) -> str:
+        """Return a hint string if `name` starts with a CiCode keyword, e.g. 'whilezn' → WHILE."""
+        for kw in ('while', 'select', 'return', 'for', 'if'):
+            if name.startswith(kw) and len(name) > len(kw):
+                rest = name[len(kw):]
+                return f" — did you mean '{kw.upper()} {rest}'?"
+        return ''
+
     # ------------------------------------------------------------------ top-level
 
     def parse(self) -> Program:
@@ -302,6 +310,12 @@ class Parser:
         if tok.type == TT.IDENTIFIER:
             return self._parse_assign_or_call()
 
+        # Stray operator in statement position is always a syntax error
+        _stray_ops = {TT.LT, TT.GT, TT.LEQ, TT.GEQ, TT.NEQ,
+                      TT.PLUS, TT.MINUS, TT.STAR, TT.SLASH, TT.CARET}
+        if tok.type in _stray_ops:
+            raise self.error(f"Unexpected operator '{tok.value}' in statement position")
+
         # Skip unknown tokens
         self.advance()
         return NopStmt(line=tok.line)
@@ -357,6 +371,14 @@ class Parser:
         if self.current().type == TT.EQ:
             self.advance()  # consume '='
             value = self._parse_expr()
+            # Check for run-on keyword that became an assignment: e.g. "fori = 1 TO 10 DO"
+            next_tok = self.current()
+            _assignment_trailing = {'to', 'then', 'do'}
+            if next_tok.type == TT.KEYWORD and next_tok.value in _assignment_trailing:
+                hint = self._keyword_prefix_hint(name)
+                raise self.error(
+                    f"Unexpected '{next_tok.value.upper()}' after assignment to '{name}'{hint}"
+                )
             self.consume_if(TT.SEMICOLON)
             self.consume_if(TT.NEWLINE)
             return AssignStmt(target=LValue(name=name, indices=indices, line=line), value=value, line=line)
@@ -370,7 +392,17 @@ class Parser:
             self.consume_if(TT.NEWLINE)
             return FuncCallStmt(name=name, args=args, line=line)
 
-        # Standalone identifier — treat as NOP
+        # Standalone identifier with no '=' and no '(' — check for operator that
+        # indicates a mistyped keyword (e.g. "WHILEznRow < 500 DO")
+        next_tok = self.current()
+        _op_types = {TT.LT, TT.GT, TT.LEQ, TT.GEQ, TT.NEQ,
+                     TT.PLUS, TT.MINUS, TT.STAR, TT.SLASH, TT.CARET}
+        _kw_ops = {'and', 'or', 'not', 'mod', 'bitand', 'bitor', 'bitxor', 'is'}
+        if next_tok.type in _op_types or (next_tok.type == TT.KEYWORD and next_tok.value in _kw_ops):
+            hint = self._keyword_prefix_hint(name)
+            raise self.error(
+                f"Unexpected '{next_tok.value}' after identifier '{name}'{hint}"
+            )
         self.consume_if(TT.SEMICOLON)
         self.consume_if(TT.NEWLINE)
         return NopStmt(line=line)

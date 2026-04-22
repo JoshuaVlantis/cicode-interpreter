@@ -368,10 +368,22 @@ class DebugAdapter:
         except SystemExit:
             pass
         except Exception as e:
-            send_event('output', {
-                'category': 'stderr',
-                'output': f'Error: {e}\n{traceback.format_exc()}'
-            })
+            # Import lazily so it's available after sys.path is set up
+            try:
+                from parser import ParseError as _ParseError
+            except ImportError:
+                _ParseError = None
+            if _ParseError and isinstance(e, _ParseError):
+                fname = e.filename or program
+                send_event('output', {
+                    'category': 'stderr',
+                    'output': f'Syntax Error ({fname}) Line [{e.line}]: {e.msg}\n'
+                })
+            else:
+                send_event('output', {
+                    'category': 'stderr',
+                    'output': f'Error: {e}\n{traceback.format_exc()}'
+                })
         finally:
             sys.stdout = old_stdout
             sys.stderr = old_stderr
