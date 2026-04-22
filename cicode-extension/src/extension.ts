@@ -1,6 +1,4 @@
 import * as vscode from "vscode";
-import * as path from "path";
-import * as fs from "fs";
 import { cfg } from "./config";
 import {
   initBuiltins,
@@ -34,14 +32,6 @@ export async function activate(context: vscode.ExtensionContext) {
     disposables.push(makeStatusBar(indexer));
     disposables.push(...makeSideBar());
 
-    const adapterExe = context.asAbsolutePath(
-      path.join("dap", "cicode-debug-adapter.exe"),
-    );
-    if (process.platform === "win32" && !fs.existsSync(adapterExe)) {
-      vscode.window.showWarningMessage(
-        `Cicode: debug adapter not found at ${adapterExe}. Run 'build.cmd' in the dap/ folder to build it.`,
-      );
-    }
     disposables.push(
       vscode.languages.registerInlineValuesProvider(
         { language: "cicode" },
@@ -52,7 +42,7 @@ export async function activate(context: vscode.ExtensionContext) {
             context: vscode.InlineValueContext,
           ): Promise<vscode.InlineValue[]> {
             const session = vscode.debug.activeDebugSession;
-            if (!session || session.type !== "cicode") return [];
+            if (!session || session.type !== "cicode-interpreter") return [];
             try {
               const { scopes } = await session.customRequest("scopes", {
                 frameId: context.frameId,
@@ -107,25 +97,6 @@ export async function activate(context: vscode.ExtensionContext) {
           },
         },
       ),
-      vscode.debug.registerDebugConfigurationProvider("cicode", {
-        resolveDebugConfiguration(
-          _folder: vscode.WorkspaceFolder | undefined,
-          config: vscode.DebugConfiguration,
-        ): vscode.DebugConfiguration {
-          // No launch.json, supply defaults so F5 just works
-          if (!config.type && !config.request) {
-            config.type = "cicode";
-            config.request = "attach";
-            config.name = "Attach to SCADA Runtime";
-          }
-          return config;
-        },
-      }),
-      vscode.debug.registerDebugAdapterDescriptorFactory("cicode", {
-        createDebugAdapterDescriptor(_session: vscode.DebugSession) {
-          return new vscode.DebugAdapterExecutable(adapterExe, []);
-        },
-      }),
     );
 
     // Invalidate builtin path cache when AVEVA path changes so the next help
