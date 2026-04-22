@@ -14,6 +14,7 @@ import { registerCommands } from "./features/commands";
 import { makeStatusBar } from "./features/statusBar";
 import { makeSideBar } from "./features/sideBar";
 import { registerRunCommands } from "./features/runner";
+import { registerReferencePanel } from "./features/referencePanel";
 import { log, error } from "./shared/utils";
 
 let indexer: Indexer | undefined;
@@ -29,6 +30,7 @@ export async function activate(context: vscode.ExtensionContext) {
     disposables.push(...registerProviders(context, indexer, cfg));
     disposables.push(...registerCommands(context, indexer, cfg));
     disposables.push(...registerRunCommands(context));
+    disposables.push(registerReferencePanel(context));
     disposables.push(makeStatusBar(indexer));
     disposables.push(...makeSideBar());
 
