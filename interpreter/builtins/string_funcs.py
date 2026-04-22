@@ -123,14 +123,16 @@ def register(registry, interp):
     def IntToStr(n):
         return str(_i(n))
 
-    def RealToStr(f, fmt=None):
-        f = _unwrap(f)
-        if fmt is not None:
-            fmt_str = _s(fmt)
-            try:
-                return fmt_str % interp.to_real(f)
-            except Exception:
-                pass
+    def RealToStr(f, width=None, places=None, separator=None):
+        """RealToStr(Number, Width, Places[, Separator]) — format real as string."""
+        f = interp.to_real(_unwrap(f))
+        if width is not None and places is not None:
+            w = _i(width)
+            p = _i(places)
+            formatted = f"{f:.{p}f}"
+            if w > 0:
+                formatted = formatted.rjust(w)
+            return formatted
         return interp.to_str(f)
 
     def Substr(s, start, length):
