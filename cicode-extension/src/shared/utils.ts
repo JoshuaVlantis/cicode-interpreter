@@ -102,8 +102,13 @@ export function computeParamBounds(params: string[]): ParamBounds {
     max++;
 
     const hasDefault = /=/.test(raw);
+    // A param is optional if we're already inside an optional group (inOptional),
+    // it has a default value, it is fully bracketed like [Param], or it starts
+    // with '[' like '[Param'. A trailing '[' (e.g. "Places[") means the optional
+    // group opens AFTER this param — the param itself is still required.
+    const startsWithBracket = raw.trimStart().startsWith("[");
     const isOptional =
-      inOptional || hasDefault || fullyBracketed || openCount > 0;
+      inOptional || hasDefault || fullyBracketed || startsWithBracket;
     if (!isOptional) min++;
 
     if (openCount > closeCount) inOptional = true;
