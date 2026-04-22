@@ -4,6 +4,7 @@ import * as fs from "fs";
 import type { Indexer } from "../core/indexer/indexer";
 import { rebuildBuiltins, resolveContentPath } from "../core/builtins/builtins";
 import { insertDocSkeletonAtCursor } from "./docSkeleton";
+import { registerAiContextCommand } from "./aiContext";
 import type { FunctionInfo } from "../shared/types";
 
 export function registerCommands(
@@ -146,6 +147,8 @@ export function registerCommands(
       }
     }),
   );
+  cmds.push(registerAiContextCommand(context));
+
   context.subscriptions.push(...cmds);
   return cmds;
 }

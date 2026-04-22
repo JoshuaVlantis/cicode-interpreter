@@ -2,7 +2,7 @@
   "name": "cicode",
   "displayName": "CiCode — AVEVA Plant SCADA",
   "description": "CiCode language support, integrated interpreter, IntelliSense, diagnostics, and debugger for AVEVA Plant SCADA",
-  "version": "1.1.15",
+  "version": "1.1.16",
   "publisher": "JoshuaVlantis",
   "repository": {
     "type": "git",
@@ -51,6 +51,10 @@
       {
         "command": "cicode.reindexAll",
         "title": "Cicode: Reindex All Files"
+      },
+      {
+        "command": "cicode.addAIContext",
+        "title": "Cicode: Add AI Context Files (CLAUDE.md / copilot-instructions.md)"
       },
       {
         "command": "cicode.openHelpForSymbol",
